@@ -1,4 +1,6 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, sized_box_for_whitespace
+// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors, sized_box_for_whitespace, prefer_interpolation_to_compose_strings, avoid_print, sort_child_properties_last
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:pokegame/button.dart';
@@ -27,32 +29,113 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  double mapx = 0;
-  double mapy = 0;
+  double mapx = 1.125;
+  double mapy = 0.45;
   String currentlocation = 'littleroot';
+  double step = 0.25;
+  int boySprintCount = 0;
+  String boyDirection = 'down';
+
+  List<List<double>> noMansLandLittleroot = [
+    [0.625, 0.7],
+    [0.825, 0.95],
+    [0.825, 0.7],
+    [0.825, 0.95],
+    [0.825, 1.2],
+    [0.825, 0.44999999999999996],
+  ];
 
   void moveUp() {
-    setState(() {
-      mapy += 0.2;
-    });
+    boyDirection = 'up';
+    if (currentlocation == 'littleroot') {
+      if (canMoveTo(boyDirection, noMansLandLittleroot, mapx, mapy)) {
+        setState(() {
+          mapy += step;
+        });
+      }
+      animateWalk();
+    }
   }
 
   void moveDown() {
-    setState(() {
-      mapy -= 0.2;
-    });
+    boyDirection = 'down';
+    if (currentlocation == 'littleroot') {
+      if (canMoveTo(boyDirection, noMansLandLittleroot, mapx, mapy)) {
+        setState(() {
+          mapy -= step;
+        });
+      }
+      animateWalk();
+    }
   }
 
   void moveRight() {
-    mapx -= 0.2;
+    boyDirection = 'right';
+    if (currentlocation == 'littleroot') {
+      if (canMoveTo(boyDirection, noMansLandLittleroot, mapx, mapy)) {
+        setState(() {
+          mapx -= step;
+        });
+      }
+      animateWalk();
+    }
   }
 
   void moveLeft() {
-    mapx += 0.2;
+    boyDirection = 'left';
+    if (currentlocation == 'littleroot') {
+      if (canMoveTo(boyDirection, noMansLandLittleroot, mapx, mapy)) {
+        setState(() {
+          mapx += step;
+        });
+      }
+      animateWalk();
+    }
   }
 
   void pressA() {}
   void pressB() {}
+
+  void animateWalk() {
+    Timer.periodic(Duration(milliseconds: 59), (timer) {
+      setState(() {
+        boySprintCount++;
+      });
+      if (boySprintCount == 3) {
+        boySprintCount = 0;
+        timer.cancel();
+      }
+    });
+  }
+
+  bool canMoveTo(String direction, var noMansLand, double x, double y) {
+    double stepX = 0;
+    double stepY = 0;
+
+    if (direction == 'left') {
+      stepX = step;
+      stepY = 0;
+    } else if (direction == 'right') {
+      stepX = -step;
+      stepY = 0;
+    } else if (direction == 'up') {
+      stepX = 0;
+      stepY = step;
+    } else if (direction == 'down') {
+      stepX = 0;
+      stepY = -step;
+    }
+
+    for (int i = 0; i < noMansLand.length; i++) {
+      print(x + stepX);
+      print(y + stepY);
+      if (((noMansLand[i][0]) == (x + stepX)) &&
+          ((noMansLand[i][1]) == (y + stepY))) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +146,13 @@ class _HomePageState extends State<HomePage> {
           child: Container(
             child: Stack(children: [
               LittleRoot(x: mapx, y: mapy, currentMap: currentlocation),
-              Container(alignment: Alignment(0, 0), child: MyBoy())
+              Container(
+                  alignment: Alignment(0, 0),
+                  child: Myboy(
+                    location: currentlocation,
+                    bodySprintCount: boySprintCount,
+                    direction: boyDirection,
+                  ))
             ]),
             color: Colors.black,
           ),
@@ -179,12 +268,10 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                  Expanded(
-                    child: Container(
-                      color: Colors.red,
-                    ),
+                  Text(
+                    "C R E A T E D B Y A K S",
+                    style: TextStyle(color: Colors.white),
                   ),
-                  Text("C R E A T E D B Y A K S")
                 ]),
           ),
         ))
